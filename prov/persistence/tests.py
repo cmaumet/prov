@@ -4,8 +4,11 @@
 @copyright: University of Southampton 2012
 '''
 
+import os
+import json
 import unittest
 import logging
+from prov.model import ProvBundle
 from prov.model.test import examples
 from prov.persistence.models import save_bundle, PDBundle
 
@@ -39,6 +42,15 @@ class SaveLoadTest(unittest.TestCase):
     def testExamples(self):
         for name, doc_method in examples.tests:
             self.save_load_graph(name, doc_method())
+
+    def testProvToolboxJSON(self):
+        json_path = os.path.dirname(os.path.abspath(examples.__file__)) + '/json/'
+        filenames = os.listdir(json_path)
+        for filename in filenames:
+            if filename.endswith('.json'):
+                with open(json_path + filename) as json_file:
+                    prov_doc = json.load(json_file, cls=ProvBundle.JSONDecoder)
+                    self.save_load_graph(filename, prov_doc)
 
 if __name__ == "__main__":
     from django.test.utils import setup_test_environment
