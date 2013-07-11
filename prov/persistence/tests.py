@@ -14,30 +14,31 @@ logger = logging.getLogger(__name__)
 
 class SaveLoadTest(unittest.TestCase):
     def __init__(self, methodName='runTest'):
-        self.bundles = {}
-        self.bundle_db_id_map = dict()
+        self.documents = []
 
         unittest.TestCase.__init__(self, methodName=methodName)
 
     def setUp(self):
-        for bundle_id, create_document in examples.tests:
-            logger.debug('Creating bundle: %s...' % bundle_id)
-            self.bundles[bundle_id] = create_document()
-
-            logger.debug('Saving bundle: %s...' % bundle_id)
-            pdbundle = save_bundle(self.bundles[bundle_id], bundle_id)
-            self.bundle_db_id_map[bundle_id] = pdbundle.pk
+        pass
 
     def tearDown(self):
-        logger.debug('Deleting all test bundles (%d in total)' % len(self.bundle_db_id_map))
-        PDBundle.objects.filter(pk__in=self.bundle_db_id_map.values()).delete()
+        logger.debug('Deleting all test bundles (%d in total)' % len(self.documents))
+        PDBundle.objects.filter(pk__in=self.documents).delete()
 
-    def testName(self):
-        for bundle_id in self.bundles:
-            logger.debug('Loading bundle from DB: %s...' % bundle_id)
-            pdbundle = PDBundle.objects.get(pk=self.bundle_db_id_map[bundle_id])
-            prov_bundle = pdbundle.get_prov_bundle()
-            assert(prov_bundle == self.bundles[bundle_id])
+    def save_load_graph(self, name, prov_doc):
+        logger.debug('Saving PROV document: %s...' % name)
+        pdbundle = save_bundle(prov_doc, name)
+        db_doc_pk = pdbundle.pk
+        self.documents.append()
+
+        logger.debug('Loading bundle from DB: %s...' % name)
+        db_doc = PDBundle.objects.get(pk=db_doc_pk)
+        loaded_prov_doc = db_doc.get_prov_bundle()
+        self.assertEqual(loaded_prov_doc, prov_doc, 'Round-trip DB saving/loading failed:  %s.' % name)
+
+    def testExamples(self):
+        for name, doc_method in examples.tests:
+            self.save_load_graph(name, doc_method())
 
 if __name__ == "__main__":
     from django.test.utils import setup_test_environment
