@@ -32,7 +32,7 @@ class SaveLoadTest(unittest.TestCase):
         logger.debug('Saving PROV document: %s...' % name)
         pdbundle = save_bundle(prov_doc, name)
         db_doc_pk = pdbundle.pk
-        self.documents.append()
+        self.documents.append(db_doc_pk)
 
         logger.debug('Loading bundle from DB: %s...' % name)
         db_doc = PDBundle.objects.get(pk=db_doc_pk)
